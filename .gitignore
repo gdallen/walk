@@ -1,5 +1,8 @@
 pom.xml
 *jar
+*.swp
 /lib/
 /classes/
 .lein-deps-sum
+
+/resources/public/cljs
