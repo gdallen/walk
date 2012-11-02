@@ -19,16 +19,20 @@
 )
 
 
+
 (defn contains-point [col p]
-; not sure that this method is needed.
   (cond 
     (nil? col) false
     (nil? (first col)) false
     :else (or 
-            (and (= (:x p) (:x (first col)))) 
+            (and (= (:x p) (:x (first col))) 
+             (= (:y p) (:y (first col))))
             (contains-point (rest col) p))
   ))
   
+(defn not-already-visited [col p]
+  (not (contains-point col p)))
+
 
 (defn get-point-color [img point]
   (cond
@@ -53,10 +57,18 @@
        image i]
   ;(print-color-diff p)
   (< (get-color-difference sc (get-point-color image p)) max-difference)))
-(defn next-points [p sc i]
+
+
+
+(defn add-already-visited [av np]
+  (apply conj av np))
+
+(defn next-points [p sc i av]
   ;; #### should add filter for points already processed
   ;; #### may need to save that with state??
-  (filter #(on-path % sc i) (points-around p)))
+  (filter #(not-already-visited av %) (filter #(on-path % sc i) (points-around p)))
+  ;(filter #(on-path % sc i) (points-around p))
+)
 
 
 ; need to work out the objects needed for doing the walk
@@ -76,7 +88,7 @@
 
 (defn find-shortest-distance [routes]
   (let [min-distance (apply min (map #(:distance %) routes))]
-   (println " minimum distance found " min-distance)
+   ;;(println " minimum distance found " min-distance)
    (first (filter #(= min-distance (:distance %)) routes))))
 
 ; need a way to build the list of routes
@@ -100,10 +112,16 @@
     (= (:y p) (:y (last (:point-list r))))))
 
 
-; build new routes process takes a point and the list of routes
-;  needs to build 
-(defn build-new-routes [r p rts sc i]
-  (apply conj rts (get-new-routes r (next-points p sc i)))
+;; build new routes process takes a point and the list of routes
+;;  needs to build 
+;(defn build-new-routes [r p rts sc i]
+; (apply conj rts (get-new-routes r (next-points p sc i)))
+;)
+(defn build-new-routes2 [r rts np]
+; create a new route for each point in the new points
+; such that each route will be route r with a new point
+  (println "--build-new-routes2" (.size np))
+  (apply conj rts (get-new-routes r np))
 )
 
 (defn remove-route [r rts]
@@ -120,7 +138,13 @@
 ;   if the route is at the end then return the route
 ;   otherwise get the new routes created by stepping from the end of this route
 ;   and put them into the list of routes to process.
-(defn walk-route [rts i sp ep sc]
+(defn walk-route [rts i sp ep sc av]
+; rts - list of routes
+; i   - image
+; sp  - starting point
+; ep  - ending point
+; sc  - starting color
+; av  - already visited points
   (cond
     (nil? rts) nil
     :else (let [route-to-process (find-shortest-distance rts)
@@ -129,7 +153,16 @@
       (println "     processing point " point-to-process " total routes " (count rts))
       (cond
         (at-finish? ep route-to-process) route-to-process
-        :else (walk-route (build-new-routes route-to-process point-to-process rest-of-routes sc i) i sp ep sc))))
+        :else 
+          (let [new-points (next-points point-to-process sc i av)
+                new-routes (cond
+                             (= 0 (.size new-points)) rest-of-routes
+                             :else (build-new-routes2 route-to-process rest-of-routes new-points))
+                already-visited (cond
+                             (= 0 (.size new-points)) av
+                             :else (add-already-visited av new-points))]
+           (walk-route new-routes i sp ep sc already-visited))))
+  )
 )
 
 
@@ -138,8 +171,12 @@
   (let [r (create-route sp)
         image i
         routes (conj [] r)
-        start-color (get-point-color image sp) ]
-  (println "min distance in the routes " (apply min (map #(:distance %) routes)))
-    (walk-route routes image sp ep start-color))
+        start-color (get-point-color image sp) 
+        already-visited []
+       ]
+  (println "min distance in the routes " 
+    (apply min (map #(:distance %) routes)))
+
+    (walk-route routes image sp ep start-color already-visited))
 )
 
