@@ -6,7 +6,7 @@
 (import 'java.awt.Color)
 
 (defn read-image [fname] 
-  (println "trying to read file " fname)
+;;  (println "trying to read file " fname)
   (ImageIO/read (new File fname))
 )
 

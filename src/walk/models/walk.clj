@@ -132,7 +132,7 @@
 (defn build-new-routes2 [r rts np]
 ; create a new route for each point in the new points
 ; such that each route will be route r with a new point
-  (println "--build-new-routes2" (.size np))
+;;  (println "--build-new-routes2" (.size np))
   (apply conj rts (get-new-routes r np))
 )
 
@@ -159,10 +159,11 @@
 ; av  - already visited points
   (cond
     (nil? rts) nil
+    (nil? (first rts)) nil
     :else (let [route-to-process (find-shortest-distance rts)
           rest-of-routes (remove-route route-to-process rts)
           point-to-process (last (:point-list route-to-process))]
-      (println "     processing point " point-to-process " total routes " (count rts))
+;;      (println "     processing point " point-to-process " total routes " (count rts))
       (cond
         (at-finish? ep route-to-process) route-to-process
         :else 
@@ -186,8 +187,8 @@
         start-color (get-point-color image sp) 
         already-visited []
        ]
-  (println "min distance in the routes " 
-    (apply min (map #(:distance %) routes)))
+;;  (println "min distance in the routes " 
+;;    (apply min (map #(:distance %) routes)))
 
     (walk-route routes image sp ep start-color already-visited))
 )

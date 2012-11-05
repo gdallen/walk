@@ -21,7 +21,7 @@
 (def walk-end (ref (point 0 0)))
 
 (defn change-mode [v]
-  (println (str "change mode method " v))
+;;  (println (str "change mode method " v))
   (cond
     (= "points" v) (dosync (ref-set current-state :points))
     (= "measure" v) (dosync (ref-set current-state :measure)
@@ -33,18 +33,18 @@
 )
 
 (defn change-unit-of-measure [v]
-  (println (str "change unit of measure " v))
+;;  (println (str "change unit of measure " v))
   (dosync (ref-set current-unit-of-measure v))
   v
 )
 
 
 (defn points [p]
-  (println "points method")
+;;  (println "points method")
   {:state (deref current-state) :point p})
 
 (defn add-measure-start [p]
-  (println "add-measure-start p is " (:x p) ": " (:y p))
+;;  (println "add-measure-start p is " (:x p) ": " (:y p))
   (dosync (ref-set measure-state :start))
   (dosync (ref-set measure-start p))
   {:start p}
@@ -60,7 +60,7 @@
   ))
 
 (defn add-measure-end [p]
-  (println "add-measure end")
+;;  (println "add-measure end")
   (dosync (ref-set measure-state :end))
   (dosync (ref-set measure-end p))
   {:start (deref measure-start) :end p :distance (measure-distance)}
@@ -68,16 +68,16 @@
 
 
 (defn add-walk-start [p]
-  (println "add-walk-start p is " (:x p) ": " (:y p))
+;;  (println "add-walk-start p is " (:x p) ": " (:y p))
   (dosync (ref-set walk-state :start))
   (dosync (ref-set walk-start p))
   {:start p}
 )
 
 (defn add-walk-end [im p]
-  (println "add walk end p is " (:x p) ": " (:y p))
+;;  (println "add walk end p is " (:x p) ": " (:y p))
   (def res (walk/walk im (deref walk-start) p))
-  (println "result of the walk " res)
+;;  (println "result of the walk " res)
   (let [old-start (deref walk-start)]
     (dosync (ref-set walk-start p))
   {:start old-start :end p 
@@ -107,17 +107,17 @@
   ))
 
 (defn walk [p]
-  (println "walk method")
+;;  (println "walk method")
   (def image (ri/read-image "resources/public/img/maps/testMap.png"))  
   (def walk-result (walk-values image p))
-  (print "walk result " walk-result)
-  (println "walk state " (deref current-state))
+;;  (print "walk result " walk-result)
+;;  (println "walk state " (deref current-state))
   (def final-result {:state (deref current-state) 
    :point p
    :result walk-result})
   
-  (println "walk state " (:state final-result))
-  (println "FINAL RESULT " final-result)
+;;  (println "walk state " (:state final-result))
+;;  (println "FINAL RESULT " final-result)
   final-result
 )
 

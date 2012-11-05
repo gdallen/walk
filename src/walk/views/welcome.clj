@@ -38,10 +38,10 @@
          ))
 
 (defremote the-point [p]
-  (println "made it to the server")
+;;  (println "made it to the server")
   ;;{:x (+ 1 (:x p)) :y (+ 1 (:y p)) }
   (def the-result (walk/add-point p))
-  (println "returning from the server page")
+;;  (println "returning from the server page")
   the-result
 )
 

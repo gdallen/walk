@@ -67,7 +67,8 @@
   (jq/text (jq/$ :#walkDistance) (:distance (:result p2)))
   (let [pts (:point-list (:result p2))]
     (cond
-      (nil? pts) (js/alert "point list was nil")
+      (nil? pts) nil
+;; (js/alert "point list was nil")
       :else (color-points pts)
     )
   )
