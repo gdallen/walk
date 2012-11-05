@@ -7,6 +7,18 @@
 
 
 (defn points-around [p]
+  (cons {:x (- (:x p) 1) :y (- (:y p) 1) }
+    (cons {:x (- (:x p) 1) :y (- (:y p) 0)}
+      (cons {:x (- (:x p) 1) :y (+ (:y p) 1)}
+        (cons {:x (- (:x p) 0) :y (- (:y p) 1)}
+          (cons {:x (- (:x p) 0) :y (+ (:y p) 1)}
+            (cons {:x (+ (:x p) 1) :y (- (:y p) 1)}
+              (cons {:x (+ (:x p) 1) :y (- (:y p) 0)}
+                (cons {:x (+ (:x p) 1) :y (+ (:y p) 1)} () 
+              ))))))))
+)
+
+(defn points-aroundx [p]
   (cons (Point. (- (:x p) 1) (- (:y p) 1) )
     (cons (Point. (- (:x p) 1) (- (:y p) 0))
       (cons (Point. (- (:x p) 1) (+ (:y p) 1))

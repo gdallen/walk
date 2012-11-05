@@ -32,14 +32,18 @@
   )
 )
 
-(defn display-point [p2]
-  (jq/text (jq/$ :#startX) (str (:x (:point p2)) ":" (:y (:point p2))))
-  
+(defn color-point [p]
   (let [surface (dom/getElement "mapCanvas")
         context (.getContext surface "2d")]
   (set! (. context -fillStyle) "rgb(0,0,255)")
-  (.fillRect context (:x (:point p2)) (:y (:point p2)) 3 3)
-))
+  (.fillRect context (:x p) (:y p) 3 3))
+)
+
+(defn display-point [p2]
+  (jq/text (jq/$ :#startX) (str (:x (:point p2)) ":" (:y (:point p2))))
+  
+  (color-point (:point p2))
+)
 
 (defn display-measure [p2]
   ;;(js/alert (str "displaying measure value " (:measure p2)))
@@ -48,23 +52,37 @@
   (jq/text (jq/$ :#endX) (str (:x (:end (:measure p2))) ":" (:y (:end (:measure p2)))))
   (jq/text (jq/$ :#measureDistance) (:distance (:measure p2)))
 )
+
+(defn color-points [pl]
+  (cond 
+    (nil? pl) ()
+    (nil? (first pl)) ()
+    :else 
+      (color-points (rest pl) (color-point (first pl)))
+  )
+)
+
 (defn display-walk [p2]
-  ;;(js/alert "returned from server for walk")
-  ;;(js/alert (str "displaying walk value " (:distance (:result p2))))
   (jq/text (jq/$ :#walkPoint) (str (:x (:point p2)) ":" (:y (:point p2))))
   (jq/text (jq/$ :#walkDistance) (:distance (:result p2)))
+  (let [pts (:point-list (:result p2))]
+    (cond
+      (nil? pts) (js/alert "point list was nil")
+      :else (color-points pts)
+    )
+  )
 )
+
+
 (defn replace-start [p]
-  (fm/remote (the-point p) [p2 ]
+  (fm/remote (the-point p) [p2]
 
-  (let [state (:state p2)
-       ]
-
-  (cond 
-    (= state :points) (display-point p2)
-    (= state :measure) (display-measure p2)
-    (= state :walk) (display-walk p2)
-  ))
+  (let [state (:state p2) ]
+    (cond 
+      (= state :points) (display-point p2)
+      (= state :measure) (display-measure p2)
+      (= state :walk) (display-walk p2)
+    ))
 ))
 
 
@@ -74,11 +92,8 @@
          totalOffsetY 0
          eventX (. e -pageX)
          eventY (. e -pageY)
-        ]
-    
-    (let [points (getFinalOffset eventX eventY current-element totalOffsetX totalOffsetY) ]
+         points (getFinalOffset eventX eventY current-element totalOffsetX totalOffsetY) ]
       (replace-start points)
-   )
   )
 )
 
@@ -128,18 +143,11 @@
                     ]
 
                   ]
-                  [:p "start:"
-                    [:div#startX] 
-                  ]
-                  [:p "finish"
-                    [:div#endX]
-                  ]
-                  [:p "Measured Distance "
-                    [:div#measureDistance]
-                    "pixels is equal to "
-                    [:div#inputDistance
-                      [:input#distance {:type "text"}]]
-                  ]
+                  [:p "start:" [:div#startX] ]
+                  [:p "finish" [:div#endX] ]
+                  [:p "Measured Distance " [:div#measureDistance]
+                    "pixels is equal to " [:div#inputDistance
+                      [:input#distance {:type "text"}]] ]
                   [:p {:id "unitsSelect"} "Unit of Measure"
                     [:select {:id "unitSelector"}
                      [:option {:value "miles"} "Miles"]

@@ -26,7 +26,8 @@
     (= "points" v) (dosync (ref-set current-state :points))
     (= "measure" v) (dosync (ref-set current-state :measure)
                             (ref-set measure-state :none))
-    (= "walk" v) (dosync (ref-set current-state :walk))
+    (= "walk" v) (dosync (ref-set current-state :walk)
+                         (ref-set walk-state :none))
   )
   (deref current-state)
 )
@@ -79,7 +80,10 @@
   (println "result of the walk " res)
   (let [old-start (deref walk-start)]
     (dosync (ref-set walk-start p))
-  {:start old-start :end p :distance (:distance res)}
+  {:start old-start :end p 
+          :distance (:distance res) 
+       ;;   :point-list [{:x 3 :y 4}]}
+          :point-list (:point-list res)}
 ))
 
 (defn measure-values [p]
@@ -107,9 +111,14 @@
   (def image (ri/read-image "resources/public/img/maps/testMap.png"))  
   (def walk-result (walk-values image p))
   (print "walk result " walk-result)
-  {:state (deref current-state) 
+  (println "walk state " (deref current-state))
+  (def final-result {:state (deref current-state) 
    :point p
-   :result walk-result}
+   :result walk-result})
+  
+  (println "walk state " (:state final-result))
+  (println "FINAL RESULT " final-result)
+  final-result
 )
 
 (defn add-point [p]
