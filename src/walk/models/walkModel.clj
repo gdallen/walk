@@ -19,6 +19,7 @@
 (def walk-start (ref (point 0 0)))
 (def walk-state (ref :none))
 (def walk-end (ref (point 0 0)))
+(def walk-distance (ref 0))
 
 (defn change-mode [v]
 ;;  (println (str "change mode method " v))
@@ -71,17 +72,22 @@
 ;;  (println "add-walk-start p is " (:x p) ": " (:y p))
   (dosync (ref-set walk-state :start))
   (dosync (ref-set walk-start p))
+  (dosync (ref-set walk-distance 0))
   {:start p}
 )
 
 (defn add-walk-end [im p]
 ;;  (println "add walk end p is " (:x p) ": " (:y p))
   (def res (walk/walk im (deref walk-start) p))
-;;  (println "result of the walk " res)
-  (let [old-start (deref walk-start)]
+  (println "result of the walk " res)
+  (let [old-start (deref walk-start)
+        new-total (+ (deref walk-distance) (:distance res))]
+  (println "new total distance " new-total)
     (dosync (ref-set walk-start p))
+    (dosync (ref-set walk-distance new-total))
   {:start old-start :end p 
           :distance (:distance res) 
+          :total-distance new-total
        ;;   :point-list [{:x 3 :y 4}]}
           :point-list (:point-list res)}
 ))
@@ -114,7 +120,8 @@
 ;;  (println "walk state " (deref current-state))
   (def final-result {:state (deref current-state) 
    :point p
-   :result walk-result})
+   :result walk-result
+   :total-distance 3})
   
 ;;  (println "walk state " (:state final-result))
 ;;  (println "FINAL RESULT " final-result)

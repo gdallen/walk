@@ -39,7 +39,8 @@
     :else (or 
             (and (= (:x p) (:x (first col))) 
              (= (:y p) (:y (first col))))
-            (contains-point (rest col) p))
+      ;      (contains-point (rest col) p))
+            (recur (rest col) p))
   ))
   
 (defn not-already-visited [col p]
@@ -163,7 +164,7 @@
     :else (let [route-to-process (find-shortest-distance rts)
           rest-of-routes (remove-route route-to-process rts)
           point-to-process (last (:point-list route-to-process))]
-;;      (println "     processing point " point-to-process " total routes " (count rts))
+      ;;(println "   processing pt " point-to-process " total rts " (count rts))
       (cond
         (at-finish? ep route-to-process) route-to-process
         :else 
@@ -174,7 +175,8 @@
                 already-visited (cond
                              (= 0 (.size new-points)) av
                              :else (add-already-visited av new-points))]
-           (walk-route new-routes i sp ep sc already-visited))))
+           ;;(walk-route new-routes i sp ep sc already-visited))))
+           (recur new-routes i sp ep sc already-visited))))
   )
 )
 

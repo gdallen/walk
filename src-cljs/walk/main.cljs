@@ -49,7 +49,7 @@
   ;;(js/alert (str "displaying measure value " (:measure p2)))
   ;;(js/alert (str "displaying measure value " (:x (:start (:measure p2)))))
   (jq/text (jq/$ :#startX) (str (:x (:start (:measure p2))) ":" (:y (:start (:measure p2)))))
-  (jq/text (jq/$ :#endX) (str (:x (:end (:measure p2))) ":" (:y (:end (:measure p2)))))
+  ;;(jq/text (jq/$ :#endX) (str (:x (:end (:measure p2))) ":" (:y (:end (:measure p2)))))
   (jq/text (jq/$ :#measureDistance) (:distance (:measure p2)))
 )
 
@@ -63,8 +63,10 @@
 )
 
 (defn display-walk [p2]
-  (jq/text (jq/$ :#walkPoint) (str (:x (:point p2)) ":" (:y (:point p2))))
-  (jq/text (jq/$ :#walkDistance) (:distance (:result p2)))
+  (jq/text (jq/$ :#startX) (str (:x (:point p2)) ":" (:y (:point p2))))
+  ;;(jq/text (jq/$ :#walkPoint) (str (:x (:point p2)) ":" (:y (:point p2))))
+  (jq/text (jq/$ :#walkStepDistance) (:distance (:result p2)))
+  (jq/text (jq/$ :#walkTotalDistance) (:total-distance (:result p2)))
   (let [pts (:point-list (:result p2))]
     (cond
       (nil? pts) nil
@@ -144,7 +146,7 @@
                     ]
 
                   ]
-                  [:p "start:" [:div#startX] ]
+                  [:p "last point clicked:" [:div#startX] ]
                   [:p "finish" [:div#endX] ]
                   [:p "Measured Distance " [:div#measureDistance]
                     "pixels is equal to " [:div#inputDistance
@@ -157,7 +159,8 @@
                   ]
                   [:p {:id "walkDistance"}
                     [:div#walkPoint]
-                    "walked " [:div#walkDistance]
+                    "walked " [:div#walkStepDistance]
+                    "total distance walked " [:div#walkTotalDistance]
                   ]
                 ]
     )
