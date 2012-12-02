@@ -2,13 +2,13 @@
   (:require [walk.views.common :as common]
             [noir.content.getting-started]
             [walk.models.walkModel :as walk]
-)
+  )
   (:use [noir.core :only [defpage]]
         [hiccup.core :only [html]]
         [hiccup.page :only [include-css include-js html5]]
         [hiccup.element :only [javascript-tag]]
         [noir.fetch.remotes :only [defremote]]
-))
+  ))
 
 (defpage "/welcome" []
                (include-css "/css/canvas.css")
@@ -37,11 +37,8 @@
           ]
          ))
 
-(defremote the-point [p]
-;;  (println "made it to the server")
-  ;;{:x (+ 1 (:x p)) :y (+ 1 (:y p)) }
+(defremote click-point [p]
   (def the-result (walk/add-point p))
-;;  (println "returning from the server page")
   the-result
 )
 
@@ -51,5 +48,9 @@
 
 (defremote the-unit-of-measure [v]
   (walk/change-unit-of-measure v)
+)
+
+(defremote the-measure-distance [v]
+  (walk/change-the-measured-distance v)
 )
 

@@ -41,15 +41,13 @@
 
 (defn display-point [p2]
   (jq/text (jq/$ :#startX) (str (:x (:point p2)) ":" (:y (:point p2))))
-  
   (color-point (:point p2))
 )
 
+
 (defn display-measure [p2]
-  ;;(js/alert (str "displaying measure value " (:measure p2)))
-  ;;(js/alert (str "displaying measure value " (:x (:start (:measure p2)))))
-  (jq/text (jq/$ :#startX) (str (:x (:start (:measure p2))) ":" (:y (:start (:measure p2)))))
-  ;;(jq/text (jq/$ :#endX) (str (:x (:end (:measure p2))) ":" (:y (:end (:measure p2)))))
+  (jq/text (jq/$ :#startX) (str (:x (:start (:measure p2))) ":" 
+                                (:y (:start (:measure p2)))))
   (jq/text (jq/$ :#measureDistance) (:distance (:measure p2)))
 )
 
@@ -64,28 +62,35 @@
 
 (defn display-walk [p2]
   (jq/text (jq/$ :#startX) (str (:x (:point p2)) ":" (:y (:point p2))))
-  ;;(jq/text (jq/$ :#walkPoint) (str (:x (:point p2)) ":" (:y (:point p2))))
   (jq/text (jq/$ :#walkStepDistance) (:distance (:result p2)))
   (jq/text (jq/$ :#walkTotalDistance) (:total-distance (:result p2)))
+  (update-error-message "")
+  (jq/text (jq/$ :#walkStepUnitDistance) (:segment-unit-distance (:result p2)))
+  (jq/text (jq/$ :#walkTotalUnitDistance) (:total-unit-distance (:result p2)))
   (let [pts (:point-list (:result p2))]
     (cond
       (nil? pts) nil
-;; (js/alert "point list was nil")
       :else (color-points pts)
     )
   )
 )
 
+(defn update-error-message [m]
+  (jq/text (jq/$ :#walkError) m)
+)
 
 (defn replace-start [p]
-  (fm/remote (the-point p) [p2]
-
-  (let [state (:state p2) ]
-    (cond 
-      (= state :points) (display-point p2)
-      (= state :measure) (display-measure p2)
-      (= state :walk) (display-walk p2)
-    ))
+  (fm/remote (click-point p) [p2]
+  (cond 
+    (nil? (:error (:result p2)))
+	  (let [state (:state p2) ]
+	    (cond 
+	      (= state :points) (display-point p2)
+	      (= state :measure) (display-measure p2)
+	      (= state :walk) (display-walk p2)
+	    ))
+    :else  (update-error-message (:error(:result p2)))
+  )
 ))
 
 
@@ -104,7 +109,8 @@
 ;; define the canvas and attach the click event handling function
 (defn display-map [map-filename]
   (let [canvas-js (str "var c=document.getElementById(\"mapCanvas\");"
-                      "c.style.backgroundImage=\"url(/img/maps/" map-filename ")\";")]
+                       "c.style.backgroundImage=\"url(/img/maps/" 
+                       map-filename ")\";")]
   (replaceHtml (selectors :map)
     (crate/html [:p 
                     [:canvas {:id "mapCanvas" 
@@ -125,15 +131,18 @@
 (defn handleModeChange [e] 
   (let [modeValue (. (js* "this") -value)]
     (fm/remote (the-mode modeValue) [p2 ])
-  )
-)
+  ))
 
 (defn handleUnitChange [e]
   (let [unitValue (. (js* "this") -value)]
     (fm/remote (the-unit-of-measure unitValue) [u2])
-  )
-)
+  ))
 
+(defn handleScaleDistanceChange [e]
+  (let [distance-value (. (js* "this") -value)]
+    (js/alert (str "the measure distance is now " distance-value))
+    (fm/remote (the-measure-distance distance-value) [u2])
+))
 
 (defn display-numbers []
   (replaceHtml (selectors :numbers)
@@ -144,29 +153,40 @@
                      [:option {:value "measure"} "Measure"]
                      [:option {:value "walk"} "Walk"]
                     ]
-
                   ]
-                  [:p "last point clicked:" [:div#startX] ]
-                  [:p "finish" [:div#endX] ]
-                  [:p "Measured Distance " [:div#measureDistance]
-                    "pixels is equal to " [:div#inputDistance
-                      [:input#distance {:type "text"}]] ]
-                  [:p {:id "unitsSelect"} "Unit of Measure"
-                    [:select {:id "unitSelector"}
-                     [:option {:value "miles"} "Miles"]
-                     [:option {:value "kilometers"} "Kilometers"]
+                  [:table 
+                    [:tr [:td "last point clicked"] [:td  [:div#startX] ] ]
+                    [:tr [:td "Measured Distance "]
+                         [:td [:div#measureDistance]] 
+                         [:td "pixels is equal to " ]
+                         [:td [:div#inputDistance ]
+                              [:input#scaleDistance {:type "text"}]
+                         ]
                     ]
-                  ]
-                  [:p {:id "walkDistance"}
-                    [:div#walkPoint]
-                    "walked " [:div#walkStepDistance]
-                    "total distance walked " [:div#walkTotalDistance]
+                    [:tr [:td {:id "unitsSelect"} "Unit of Measure" ]]
+                    [:tr [:td ][:td "Pixels" ]
+                         [:td  [:select {:id "unitSelector"}
+                                 [:option {:value "miles"} "Miles"]
+                                 [:option {:value "kilometers"} "Kilometers"]
+                               ]
+                         ]
+                    ]
+                    [:tr [:td "segment distance"] 
+                         [:td {:id "walkDistance"} [:div#walkStepDistance] ]
+                         [:td [:div#walkStepUnitDistance]]
+                    ]
+                    [:tr [:td "total distance walkded"]
+                        [:td "total distance walked " [:div#walkTotalDistance] ]
+                        [:td [:div#walkTotalUnitDistance]]
+                   ]
+                    [:tr [:td [:div#walkError]]]
                   ]
                 ]
     )
   )
   (jq/bind (jq/$ :#modeSelector) :change handleModeChange)
   (jq/bind (jq/$ :#unitSelector) :change handleUnitChange)
+  (jq/bind (jq/$ :#scaleDistance) :change handleScaleDistanceChange)
 
 )
 
