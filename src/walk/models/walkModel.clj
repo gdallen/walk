@@ -20,7 +20,7 @@
 
 (def walk-start (ref (point 0 0)))
 (def walk-state (ref :none))
-(def walk-end (ref (point 0 0)))
+;(def walk-end (ref (point 0 0)))
 (def walk-distance (ref 0))
 
 (defn change-mode [v]
@@ -118,10 +118,50 @@
    :measure (measure-values p)}
 )
 
+(defn adjust-start-point 
+  "Look at all the points surrounding the current point
+   and find the point that is the darkest.  If the darkest
+   point is just as dark as the selected point, just return the
+   selected point.  If the darkest point is darker, then assume 
+   the click was slightly off (maps tend to be light with dark
+   lines) and go with the darker point."
+  [image p]
+  (let [p-darkness (ri/darkness image p)
+        points (for [x (range (- (:x p) 1) (+ (:x p) 2))
+                     y (range (- (:y p) 1) (+ (:y p) 2))
+                    ]
+                   {:x x :y y})
+        with-darkness (map #(assoc % :darkness (ri/darkness image %)) points)
+        sorted-darkness (sort-by :darkness with-darkness)
+        return-value   (cond
+                         (= p-darkness (:darkness (first sorted-darkness))) p
+                         :else (first sorted-darkness))
+       ]
+    return-value
+  )) 
+
+(defn adjust-end-point
+  "look at "
+  [image p]
+  (let [p-darkness (ri/darkness image p)
+        start-darkness (ri/darkness image (deref walk-start))
+        points (for [x (range (- (:x p) 2) (+ (:x p) 3))
+                     y (range (- (:y p) 2) (+ (:y p) 3))
+                    ]
+                   {:x x :y y})
+        with-dark-difference (map #(assoc % :dark-difference (Math/abs (- (ri/darkness image %) start-darkness))) points)
+        sorted-darkness (sort-by :dark-difference with-dark-difference)
+        return-value   (cond
+                         (= p-darkness (:darkness (first sorted-darkness))) p
+                         :else (first sorted-darkness))
+       ]
+    return-value
+))
+
 (defn walk-values [image p]
   (cond
-    (= :none (deref walk-state)) (add-walk-start p)
-    (= :start (deref walk-state)) (add-walk-end image p)
+    (= :none (deref walk-state)) (add-walk-start (adjust-start-point image p))
+    (= :start (deref walk-state)) (add-walk-end image (adjust-end-point image p))
   ))
 
 (defn walk [p]

@@ -13,6 +13,24 @@
 (defn get-rgb-color [img, x y]
   (.getRGB img x y)) 
 
+(defn darkness [image p]
+  (let [color-rgb (get-rgb-color image (:x p) (:y p))
+        color2 (new Color color-rgb)]
+    (+ (.getRed color2) (.getGreen color2) (.getBlue color2))
+  ))
+
+(defn points-around [p]
+  (cons {:x (- (:x p) 1) :y (- (:y p) 1) }
+    (cons {:x (- (:x p) 1) :y (- (:y p) 0)}
+      (cons {:x (- (:x p) 1) :y (+ (:y p) 1)}
+        (cons {:x (- (:x p) 0) :y (- (:y p) 1)}
+          (cons {:x (- (:x p) 0) :y (+ (:y p) 1)}
+            (cons {:x (+ (:x p) 1) :y (- (:y p) 1)}
+              (cons {:x (+ (:x p) 1) :y (- (:y p) 0)}
+                (cons {:x (+ (:x p) 1) :y (+ (:y p) 1)} () 
+              ))))))))
+)
+
 ;(def img (read-image "test.jpg"))
 
 ;(println (.getHeight img))
