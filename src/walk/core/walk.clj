@@ -83,9 +83,19 @@
 )
 
 
+(defn inc-distance [r p]
+  ;(println "point list from route " (:point-list r))
+  (let [p1 (peek (:point-list r))
+        xdiff (- (:x p) (:x p1))
+        ydiff (- (:y p) (:y p1))
+        new-distance (+ (:distance r) (Math/sqrt (+ (* xdiff xdiff) (* ydiff ydiff))))
+       ]
+     new-distance
+))
+
 ; need to work out the objects needed for doing the walk
 ; already have start-point
-; need and end-point
+; need an end-point
 ; need a collection of routes to test from and add the start point to that
 ;    a route has 
 ;        a list of points that it has travelled.
@@ -96,7 +106,7 @@
 (defrecord Route [distance point-list])
 (defn create-route 
   ([p] (Route. 0 (conj [] p)))
-  ([p r] (Route. (inc (:distance r)) (conj (:point-list r) p))))
+  ([p r] (Route. (inc-distance r p) (conj (:point-list r) p))))
 
 (defn find-shortest-distance [routes]
   (let [min-distance (apply min (map #(:distance %) routes))]

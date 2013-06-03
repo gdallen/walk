@@ -15,6 +15,30 @@
 (deftest test-not-contains-point
   (is (not (= true (contains-point points-list {:x 4 :y 5})))))
 
-(run-tests)
-(println "test")
+(deftest distance-new-route
+  (let [r (create-route {:x 3 :y 5})]
+    (is (= 0 (:distance r)))
+  ))
 
+(deftest distance-route-with-point-1
+  (let [r1 (create-route {:x 3 :y 5})
+        r (create-route {:x 4 :y 5} r1)
+       ]
+    (is (= 1.0 (:distance r)))
+  ))
+(deftest distance-route-with-point-2
+  (let [r1 (create-route {:x 3 :y 5})
+        r (create-route {:x 4 :y 6} r1)
+       ]
+    (is (< (Math/abs (- (Math/sqrt 2) (:distance r))) 0.0001))
+  ))
+
+(deftest distance-route-with-three-points
+  (let [r1 (create-route {:x 3 :y 5})
+        r2 (create-route {:x 4 :y 5} r1)
+        r (create-route {:x 5 :y 6} r2)
+       ]
+    (is (< (Math/abs (- (+ 1 (Math/sqrt 2)) (:distance r))) 0.0001))
+  ))
+
+(run-tests)

@@ -107,15 +107,15 @@
 
 
 ;; define the canvas and attach the click event handling function
-(defn display-map [map-filename]
+(defn display-map [map-filename w h]
   (let [canvas-js (str "var c=document.getElementById(\"mapCanvas\");"
                        "c.style.backgroundImage=\"url(/img/maps/" 
                        map-filename ")\";")]
   (replaceHtml (selectors :map)
     (crate/html [:p 
                     [:canvas {:id "mapCanvas" 
-                          :width 640 
-                          :height 400 
+                          :width w
+                          :height h 
                           :tabindex 1
                           :style "border:1px solid #000000"}]
                   (element/javascript-tag canvas-js)
@@ -125,7 +125,7 @@
   (jq/bind (jq/$ :#mapCanvas) :click handleClickOnCanvas)
 )
 
-(display-map "testMap.png")
+(display-map "testMap.png" 600 400)
 
 
 (defn handleModeChange [e] 
